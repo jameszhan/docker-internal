@@ -125,7 +125,7 @@ echo 14986 | sudo tee /sys/fs/cgroup/cpu/mygroup/tasks
 top -u james
 ```
 
-![docker-cgroups-03.png](assets/docker-cgroups-03.png) 
+![docker-cgroups-03.png](assets/images/docker-cgroups-03.png) 
 
 我们再来看看多核的场景
 
@@ -140,7 +140,7 @@ echo 10000 | tee /sys/fs/cgroup/cpu/mygroup/cpu.cfs_quota_us
 top -u james
 ```
 
-![docker-cgroups-04.png](assets/docker-cgroups-04.png) 
+![docker-cgroups-04.png](assets/images/docker-cgroups-04.png) 
 
 
 ```bash
@@ -148,7 +148,7 @@ top -u james
 echo 2394 > /sys/fs/cgroup/cpu/mygroup/tasks
 ```
 
-![docker-cgroups-05.png](assets/docker-cgroups-05.png) 
+![docker-cgroups-05.png](assets/images/docker-cgroups-05.png) 
 
 
 这里有一个有意思的地方，`CPU` 配额并没有如我们预期地降低到 `10%`，而是 `210%`，表现上就是我们的配额配置，在同时启动 3 个 `goroutine` 的情况下，只对 1 个 `CPU` 生效了，另外 2 个 `CPU` 完全没有受到影响。这个表现比较诡异，自己查了很多资料也没有找到具体原因，如果有某位看客知道具体原因，还望不吝赐教。

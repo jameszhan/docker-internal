@@ -4,8 +4,9 @@
 
 | name | 描述 |
 | --- | --- |
-| fork | 创建一个新进程 |
-| clone | 按指定条件创建子进程 | |
+| fork | 创建一个新进程，fork创造的子进程是父进程的完整副本，复制了父亲进程的资源，包括内存的内容task_struct内容 |
+| vfork | 创建一个子进程，以供执行新程序，常与execve等同时使用，vfork创建的子进程与父进程共享数据段,而且由vfork()创建的子进程将先于父进程运行|
+| clone | 按指定条件创建子进程，Linux上创建线程一般使用的是pthread库 实际上linux也给我们提供了创建线程的系统调用，就是clone |
 | execve | 运行可执行文件 |
 | exit | 中止进程 |
 | _exit | 立即中止当前进程 |
@@ -33,7 +34,6 @@
 | sched_setparam | 设置进程的调度参数 |
 | sched_setscheduler | 设置指定进程的调度策略和参数 |
 | sched_yield | 进程主动让出处理器,并将自己等候调度队列队尾 |
-| vfork | 创建一个子进程，以供执行新程序，常与execve等同时使用 |
 | wait | 等待子进程终止 |
 | wait3 | 参见wait |
 | waitpid | 等待指定子进程终止 |

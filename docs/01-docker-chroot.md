@@ -80,9 +80,7 @@ ifconfig
 #          inet addr:172.18.113.32  Bcast:172.18.127.255  Mask:255.255.240.0
 #          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
 #
-# lo        Link encap:Local Loopback
-#          inet addr:127.0.0.1  Mask:255.0.0.0
-#          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+...
 ```
 对比宿主机 `IP` 配置会发现网络是没有隔离的。
 
@@ -153,6 +151,16 @@ cp ~/stretch/lib/x86_64-linux-gnu/libtinfo.so.5.9 ~/rootfs/lib/libtinfo.so.5
 cp ~/stretch/lib/x86_64-linux-gnu/libdl-2.24.so ~/rootfs/lib/libdl.so.2
 cp ~/stretch/lib/x86_64-linux-gnu/libc.so.6 ~/rootfs/lib/libc.so.6
 
+tree ~/rootfs
+# /home/james/rootfs
+# ├── bash
+# ├── lib
+# │   ├── libc.so.6
+# │   ├── libdl.so.2
+# │   └── libtinfo.so.5
+# └── lib64
+#     └── ld-linux-x86-64.so.2
+#     
 sudo chroot rootfs ./bash
 ```
 
@@ -219,20 +227,7 @@ sudo ./chroot_demo.py ifconfig
 #           collisions:0 txqueuelen:1000
 #           RX bytes:102811026834 (95.7 GiB)  TX bytes:70775210676 (65.9 GiB)
 # 
-# lo        Link encap:Local Loopback
-#           inet addr:127.0.0.1  Mask:255.0.0.0
-#           UP LOOPBACK RUNNING  MTU:65536  Metric:1
-#           RX packets:146 errors:0 dropped:0 overruns:0 frame:0
-#           TX packets:146 errors:0 dropped:0 overruns:0 carrier:0
-#           collisions:0 txqueuelen:1
-#           RX bytes:15540 (15.1 KiB)  TX bytes:15540 (15.1 KiB)
-# 
-# veth2138b36 Link encap:Ethernet  HWaddr 02:61:AD:17:5C:1E
-#           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-#           RX packets:54 errors:0 dropped:0 overruns:0 frame:0
-#           TX packets:54 errors:0 dropped:0 overruns:0 carrier:0
-#           collisions:0 txqueuelen:0
-#           RX bytes:9048 (8.8 KiB)  TX bytes:4587 (4.4 KiB)
+...
 ```
 
 #### 示例2

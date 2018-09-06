@@ -96,7 +96,7 @@ cat /sys/fs/cgroup/cpu/mygroup/tasks
 
 只要在 `/sys/fs/cgroup/cpu/` 目录下创建完目录，系统就会自动在我们的目录下增加以上文件。
 
-`cpu.cfs_period_us` 用来配置时间周期长度，`cpu.cfs_quota_us` 用来配置当前 `cgroup` 在设置的周期长度内所能使用的CPU时间数，两个文件配合起来设置CPU的使用上限，如果 `cpu.cfs_quota_us` 的值为 -1(默认值)，表示不受 cpu 时间的限制。。
+`cpu.cfs_period_us` 用来配置时间周期长度，`cpu.cfs_quota_us` 用来配置当前 `cgroup` 在设置的周期长度内所能使用的CPU时间数，两个文件配合起来设置CPU的使用上限，如果 `cpu.cfs_quota_us` 的值为 -1(默认值)，表示不受 cpu 时间的限制。
 
 
 #### 限制 `CPU` 资源的使用

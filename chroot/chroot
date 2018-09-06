@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+# encoding: UTF-8
+
+require 'thor'
+require 'sshkit'
+require 'sshkit/dsl'
+
+SSHKit.config.format = :pretty
+SSHKit.config.output_verbosity = :debug
+
+
+class Chroot < Thor
+  include SSHKit::DSL
+
+  desc 'demo 47.106.180.0 james PASSWORD', 'demo start'
+  def demo(host, user, password = 12345678)
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      within 'codes' do
+        upload! 'demo.c', "/home/#{user}/codes/chroot_demo.c"
+        execute :gcc, '-Wall chroot_demo.c -o chroot_demo'
+        execute :sudo, './chroot_demo ls -la'
+        execute :sudo, './chroot_demo uname -r'
+        execute :sudo, './chroot_demo id'
+        execute :sudo, './chroot_demo ps -lf'
+      end
+    end
+  end
+
+  desc 'rootfs 47.106.180.0 james PASSWORD', 'chroot rootfs'
+  def rootfs(host, user, password = 12345678)
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      within 'codes' do
+        upload! 'rootfs.c', "/home/#{user}/codes/chroot_rootfs.c"
+        execute :gcc, '-Wall chroot_rootfs.c -o chroot_rootfs'
+      end
+      execute :sudo, './codes/chroot_rootfs ./stretch /bin/ls -la'
+    end
+  end
+
+
+end
+
+Chroot.start(ARGV)

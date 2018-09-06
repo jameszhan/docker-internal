@@ -1,0 +1,115 @@
+#!/usr/bin/env ruby
+# encoding: UTF-8
+
+require 'thor'
+require 'sshkit'
+require 'sshkit/dsl'
+
+SSHKit.config.format = :pretty
+SSHKit.config.output_verbosity = :debug
+
+
+class Aufs < Thor
+  include SSHKit::DSL
+
+  desc 'hello 47.106.180.0 james PASSWORD', 'aufs hello'
+  def hello(host, user, password = 12345678)
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      execute :rm, '-fr tmp'
+      execute :mkdir, 'tmp'
+      within 'tmp' do
+        execute :mkdir, 'fruits vegetables'
+        within 'fruits' do
+          execute :touch, 'apple tomato'
+        end
+        within 'vegetables' do
+          execute :touch, 'carrot tomato'
+        end
+        execute :tree
+
+        execute :mkdir, 'mnt'
+        execute :sudo, 'mount -t aufs -o dirs=./fruits:./vegetables none ./mnt'
+        begin
+          execute :tree, 'mnt'
+
+          execute :echo, 'apple in mnt > ./mnt/apple'
+          execute :echo, 'carrot in mnt > ./mnt/carrot'
+          execute :echo, 'tomato in mnt > ./mnt/tomato'
+
+          execute :cat, './mnt/apple'
+          execute :cat, './mnt/carrot'
+          execute :cat, './mnt/tomato'
+
+          puts 'Check file in original directories.'
+          execute :tree, '.'
+          execute :cat, './fruits/apple'
+          execute :cat, './fruits/tomato'
+          execute :cat, './vegetables/carrot'
+          execute :cat, './vegetables/tomato'
+        ensure
+          execute :sudo, 'umount mnt'
+        end
+      end
+    end
+  end
+
+  desc 'round_robin 10.211.55.7 deploy PASSWORD', 'aufs round_robin'
+  def round_robin(host, user, password = 12345678)
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      execute :rm, '-fr tmp'
+      execute :mkdir, 'tmp'
+      within 'tmp' do
+        execute :mkdir, 'a b c d e'
+        execute :tree
+
+        execute :mkdir, 'mnt'
+        #create=mfs[:second] | most−free−space[:second], create=mfsrr:low[:second]
+        execute :sudo, 'mount -t aufs -o dirs=./a=rw:./b=rw:./c=rw:./d=rw:./e=rw -o create=rr none ./mnt'
+        begin
+          execute :tree, 'mnt'
+          within 'mnt' do
+            execute :touch, '1 2 3 4 5 6 7 8 9 10'
+          end
+          execute :tree
+        ensure
+          execute :sudo, 'umount mnt'
+        end
+      end
+    end
+  end
+
+  desc 'stack_up 10.211.55.7 deploy PASSWORD', 'aufs stack_up'
+  def stack_up(host, user, password = 12345678)
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      execute :rm, '-fr tmp'
+      execute :mkdir, 'tmp'
+      within 'tmp' do
+        execute :mkdir, '-p rootfs/bin rootfs/etc rootfs/var/tmp emacs/bin apache/etc apache/bin apache/var/www writable'
+        execute :touch, 'rootfs/bin/ls rootfs/etc/default.conf emacs/bin/emacs apache/bin/httpd apache/etc/httpd.conf'
+        execute :tree, '-al'
+
+        execute :mkdir, 'container'
+        execute :sudo, 'mount -t aufs -o dirs=./writable:./apache:./emacs:./rootfs none ./container'
+
+        begin
+          lsaufs = capture :ls, '/sys/fs/aufs/'
+          if (fs = /(si_[^s]+)/.match(lsaufs))
+            puts capture :cat, "/sys/fs/aufs/#{fs[1]}/*"
+          end
+
+          execute :tree, '-al'
+          within 'container' do
+            execute :rm, '-fr var/tmp'
+            execute :rm, '-fr etc/default.conf'
+            execute :echo, 'Hello Apache > httpd.conf'
+          end
+          execute :tree, '-al'
+        ensure
+          execute :sudo, 'umount container'
+        end
+      end
+    end
+  end
+end
+
+Aufs.start(ARGV)

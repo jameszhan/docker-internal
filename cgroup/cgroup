@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+# encoding: UTF-8
+
+require 'thor'
+require 'sshkit'
+require 'sshkit/dsl'
+
+SSHKit.config.format = :pretty
+SSHKit.config.output_verbosity = :debug
+
+
+class Cgroup < Thor
+  include SSHKit::DSL
+
+  desc 'cpu 47.106.180.0 james PASSWORD', 'cgroup cpu'
+  def cpu(host, user, password = 12345678)
+    demo_cgroup = 'cgroup_demo';
+    on "root@#{host}", in: :sequence, wait: 5 do
+      execute :mkdir, "/sys/fs/cgroup/cpu/#{demo_cgroup}" unless test("[ -d /sys/fs/cgroup/cpu/#{demo_cgroup} ]")
+      execute :echo, "20000 > /sys/fs/cgroup/cpu/#{demo_cgroup}/cpu.cfs_quota_us"
+    end
+
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      within 'codes' do
+        upload! 'demo.c', "/home/#{user}/codes/cgroup_demo.c"
+        execute :gcc, '-Wall cgroup_demo.c -o cgroup_demo'
+        execute :echo, '"hello cgroup" && ./cgroup_demo > /dev/null &'
+      end
+    end
+
+    on "root@#{host}", in: :sequence, wait: 5 do
+      execute :top, "-u #{user} -bcn 1"
+      execute :top, "-u #{user} -bcn 1"
+      execute :top, "-u #{user} -bcn 1"
+      ps = capture :ps, "-u #{user}"
+      if (m = /^[^\d]+([\d]+).+cgroup_demo$/.match(ps))
+        pid = m[1]
+        execute :echo, "#{pid} > /sys/fs/cgroup/cpu/#{demo_cgroup}/tasks"
+        execute :top, "-u #{user} -bcn 1"
+        execute :top, "-u #{user} -bcn 1"
+        execute :top, "-u #{user} -bcn 1"
+        execute :kill, pid
+      else
+        puts "Unexpected PS INFO #{ps}"
+      end
+    end
+  end
+end
+
+Cgroup.start(ARGV)

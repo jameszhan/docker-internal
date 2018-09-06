@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+# encoding: UTF-8
+
+require 'thor'
+require 'sshkit'
+require 'sshkit/dsl'
+
+SSHKit.config.format = :pretty
+SSHKit.config.output_verbosity = :debug
+
+
+class NS < Thor
+  include SSHKit::DSL
+
+  desc 'demo 47.106.180.0 james PASSWORD', 'linux namespace demo'
+  def demo(host, user, password = 12345678)
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      upload! 'demo.c', "/home/#{user}/codes/ns_demo.c"
+      execute :gcc, '-Wall codes/ns_demo.c -o codes/ns_demo'
+      execute :sudo, './codes/ns_demo ls -la'
+      execute :sudo, './codes/ns_demo lsb_release -a'
+      execute :sudo, './codes/ns_demo ps -elf'
+      execute :sudo, './codes/ns_demo mount -l'
+      execute :sudo, './codes/ns_demo lsof'
+      execute :sudo, './codes/ns_demo id'
+    end
+  end
+
+  desc 'start 47.106.180.0 james PASSWORD', 'linux namespace demo start'
+  def start(host, user, password = 12345678)
+    on "#{user}@#{host}", in: :sequence, wait: 5 do
+      upload! 'demo.c', "/home/#{user}/codes/ns_demo.c"
+      execute :gcc, '-Wall codes/ns_demo.c -o codes/ns_demo'
+      execute :sudo, './codes/ns_demo ls -la'
+      execute :sudo, './codes/ns_demo lsb_release -a'
+      execute :sudo, './codes/ns_demo ps -elf'
+      execute :sudo, './codes/ns_demo mount -l'
+      execute :sudo, './codes/ns_demo lsof'
+      execute :sudo, './codes/ns_demo id'
+    end
+  end
+end
+
+NS.start(ARGV)
